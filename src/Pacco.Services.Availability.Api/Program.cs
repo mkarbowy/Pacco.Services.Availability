@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Convey;
 using Convey.Types;
 using Convey.WebApi;
@@ -30,8 +31,9 @@ namespace Pacco.Services.Availability.Api
             .Configure(app => app
                 .UseInfrastructure()
                 .UseDispatcherEndpoints(endpoints => endpoints
+                    .Get<GetResources, IEnumerable<ResourceDto>>("resources")
                     .Get("", ctx=>ctx.Response.WriteAsync(ctx.RequestServices.GetService<AppOptions>().Name))
-                    .Get<GetResource, ResourceDto>("resources/{resouceId}")
+                    .Get<GetResource, ResourceDto>("resources/{resourceId}")
                     .Post<AddResource>("resources", afterDispatch: (cmd, ctx)  => ctx.Response.Created($"resources/{cmd.ResourceId}")))); 
 
 
