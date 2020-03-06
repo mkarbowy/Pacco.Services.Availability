@@ -1,12 +1,17 @@
-﻿using Convey;
+﻿using System.Threading.Tasks;
+using Convey;
+using Convey.Types;
 using Convey.WebApi;
+using Convey.WebApi.CQRS;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Pacco.Services.Availability.Application;
+using Pacco.Services.Availability.Application.Commands;
+using Pacco.Services.Availability.Application.DTO;
+using Pacco.Services.Availability.Application.Queries;
 using Pacco.Services.Availability.Infrastructure;
-using System.Threading.Tasks;
 
 namespace Pacco.Services.Availability.Api
 {
@@ -22,10 +27,15 @@ namespace Pacco.Services.Availability.Api
                 .AddApplication()
                 .AddInfrastructure()
                 .Build())
-            .Configure(app => 
-                app.UseInfrastructure()
-                .UseRouting()
-                .UseEndpoints(e=>e.MapControllers()));
+            .Configure(app => app
+                .UseInfrastructure()
+                .UseDispatcherEndpoints(endpoints => endpoints
+                    .Get("", ctx=>ctx.Response.WriteAsync(ctx.RequestServices.GetService<AppOptions>().Name))
+                    .Get<GetResource, ResourceDto>("resources/{resouceId}")
+                    .Post<AddResource>("resources", afterDispatch: (cmd, ctx)  => ctx.Response.Created($"resources/{cmd.ResourceId}")))); 
+
+
+
 
     }
 }
